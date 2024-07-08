@@ -1,0 +1,172 @@
+<!-- Start Banner Area -->
+<section class="banner-area organic-breadcrumb">
+    <div class="container">
+        <div class="breadcrumb-banner d-flex flex-wrap align-items-center justify-content-end">
+            <div class="col-first">
+                <h1>Checkout</h1>
+                <nav class="d-flex align-items-center">
+                    <a href="index.html">Home<span class="lnr lnr-arrow-right"></span></a>
+                    <a href="single-product.html">Checkout</a>
+                </nav>
+            </div>
+        </div>
+    </div>
+</section>
+<!-- End Banner Area -->
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+<!--================Checkout Area =================-->
+<section class="checkout_area section_gap">
+    <div class="container">
+        <div class="cupon_area">
+            <input type="text" placeholder="Enter coupon code">
+            <a class="tp_btn" href="#">Apply Coupon</a>
+        </div>
+        <div class="billing_details">
+            <div class="row">
+                <div class="col-lg-8">
+                    <h3>Billing Details</h3>
+                    <form class="row contact_form" action="#" method="post" novalidate="novalidate">
+                        <div class="col-md-6 form-group p_star">
+                            <input type="text" class="form-control" id="firstName" name="name" placeholder="First name">
+                        </div>
+                        <div class="col-md-6 form-group p_star">
+                            <input type="text" class="form-control" id="lastName" name="name" placeholder="Last name">
+                        </div>
+                        <div class="col-md-6 form-group p_star">
+                            <input type="text" class="form-control" id="phoneNumber" name="phoneNumber"
+                                placeholder="Phone number">
+                        </div>
+                        <div class="col-md-12 form-group p_star">
+                            <input type="text" class="form-control" id="address" name="address" placeholder="Address">
+                            {{!-- <span class="placeholder" data-placeholder="Address"></span> --}}
+                        </div>
+                        <div class="col-md-12 form-group p_star">
+                            <input type="text" class="form-control" id="city" name="city" placeholder="Town/City">
+                            {{!-- <span class="placeholder" data-placeholder="Town/City"></span> --}}
+                        </div>
+                        <div class="col-md-12 form-group p_star">
+                            <input type="text" class="form-control" id="district" name="district"
+                                placeholder="district">
+                            {{!-- <span class="placeholder" data-placeholder="district"></span> --}}
+                        </div>
+                        <div class="col-md-12 form-group">
+                            <div class="creat_account">
+                                <h3>Shipping Details</h3>
+                                <input type="checkbox" id="f-option3">
+                                <label for="f-option3">Ship to a different address?</label>
+                            </div>
+                            <textarea class="form-control" name="message" id="message" rows="1"
+                                placeholder="Order Notes"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="col-lg-4">
+                    <div class="order_box">
+                        <h2>Your Order</h2>
+                        <ul class="list list_2">
+                            <li><a href="#">Product <span>Price</span></a></li>
+                        </ul>
+                        <ul class="list" id="list">
+
+
+                        </ul>
+                        <ul class="list list_2">
+
+                            <li><a href="#">Total <span id="total"></span></a> </li>
+                        </ul>
+                        <div class="payment_item">
+                            <div class="radion_btn">
+                                <input type="radio" id="f-option5" value="Check payments" name="selector">
+                                <label for="f-option5">Check payments</label>
+                                <div class="check"></div>
+                            </div>
+
+                        </div>
+                        <div class="payment_item active">
+                            <div class="radion_btn">
+                                <input type="radio" id="f-option6" value="Paypal" name="selector">
+                                <label for="f-option6">Paypal </label>
+                                <img src="img/product/card.jpg" alt="">
+                                <div class="check"></div>
+                            </div>
+                        </div>
+                        <button class="primary-btn" onclick="checkout()">Proceed to Paypal</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+<script>
+    var checkouts = JSON.parse(localStorage.getItem("cartProducts")) || [];
+    const list = document.querySelector("#list");
+    const tt = document.getElementById("total");
+    let html = "";
+
+    checkouts.forEach(product => {
+
+        html += `<li><a class="name">${product.name}</a> 
+                                         <span class="middle">${product.quantity}</span>
+                                         <span class="last">${product.price}</span> </li>`
+        list.innerHTML = html;
+
+    });
+    let total = 0
+    checkouts.forEach(product => {
+        total += parseInt(product.price) * product.quantity;
+        tt.innerHTML = total
+    })
+</script>
+<script>
+
+    async function checkout() {
+        const firstName = document.getElementById("firstName").value;
+        const lastName = document.getElementById("lastName").value;
+        const phoneNumber = document.getElementById("phoneNumber").value;
+        const address = document.getElementById("address").value;
+        const city = document.getElementById("city").value;
+        const district = document.getElementById("district").value;
+        const message = document.getElementById("message").value;
+        const methodPayment = document.getElementsByName("selector");
+
+        // Tạo một đối tượng FormData để chứa dữ liệu
+        const formData = new URLSearchParams();
+
+        formData.append("firstName", firstName);
+        formData.append("lastName", lastName);
+        formData.append("phoneNumber", phoneNumber);
+        formData.append("address", address);
+        formData.append("city", city);
+        formData.append("district", district);
+        formData.append("message", message);
+
+        // Chuyển đổi mảng checkouts thành chuỗi JSON và thêm vào FormData
+        const productsString = JSON.stringify(checkouts);
+        formData.append("products", productsString);
+
+        for (let i = 0; i < methodPayment.length; i++) {
+            // Kiểm tra radio input nào được chọn
+            if (methodPayment[i].checked) {
+                formData.append("methodPayment", methodPayment[i].value);
+                break; // Thoát khỏi vòng lặp sau khi đã tìm thấy radio input được chọn
+            }
+        }
+
+        try {
+            const response = await axios.post("/checkout", formData);
+
+            if (response.status === 200) {
+                localStorage.removeItem("cartState");
+                localStorage.removeItem("cartProducts");
+                window.location.href = "/store";
+            } else {
+                alert(response.data.msg || "Lấy dữ liệu thất bại");
+            }
+        } catch (error) {
+            console.error(error);
+            alert("Có lỗi xảy ra khi gửi request");
+        }
+    }
+</script>
+<!--================End Checkout Area =================-->
